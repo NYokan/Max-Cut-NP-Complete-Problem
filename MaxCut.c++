@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <chrono>
+#include <iomanip>
 
 using namespace std;
 
@@ -80,12 +81,18 @@ pair<int, vector<int>> max_cut_greedy(const vector<vector<int>>& matriz_adyacenc
 int main() {
     srand(time(0));
     vector<vector<int>> grafo_prueba = {
-        {0, 5, 0, 4, 1},
-        {5, 0, 4, 0, 2},
-        {0, 4, 0, 5, 3},
-        {4, 0, 5, 0, 2},
-        {1, 2, 3, 2, 0}
+        {0,5,0,4,1,2,0,3,1,2},
+        {5,0,4,0,2,1,3,0,2,1},
+        {0,4,0,5,3,2,1,2,0,3},
+        {4,0,5,0,2,3,2,1,4,0},
+        {1,2,3,2,0,4,0,3,2,1},
+        {2,1,2,3,4,0,5,0,1,2},
+        {0,3,1,2,0,5,0,4,2,3},
+        {3,0,2,1,3,0,4,0,5,2},
+        {1,2,0,4,2,1,2,5,0,3},
+        {2,1,3,0,1,2,3,2,3,0}
     };
+
 
     cout << "--- INICIANDO PRUEBAS MAX CUT EN C++ ---\n\n";
 
@@ -93,6 +100,8 @@ int main() {
     auto resultado_fb = max_cut_fuerza_bruta(grafo_prueba);
     auto fin_fb = chrono::high_resolution_clock::now();
     chrono::duration<double> duracion_fb = fin_fb - inicio_fb;
+
+    cout << fixed << setprecision(9);
 
     cout << "1. FUERZA BRUTA:\n";
     cout << "   Peso maximo: " << resultado_fb.first << "\n";

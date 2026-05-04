@@ -1,28 +1,39 @@
-import java.util.Arrays;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 public class MaxCut {
 
-    public static class Resultado {
+    static class Resultado {
         int peso;
         int[] particion;
 
-        public Resultado(int peso, int[] particion) {
+        Resultado(int peso, int[] particion) {
             this.peso = peso;
             this.particion = particion;
         }
     }
 
-    public static Resultado maxCutFuerzaBruta(int[][] matrizAdyacencia) {
-        int n = matrizAdyacencia.length;
-        int maxPeso = 0;
+    //FUERZA BRUTA CON TIMEOUT
+    public static Resultado maxCutFuerzaBrutaTimeout(int[][] matriz, double tiempoLimiteSegundos) {
+        int n = matriz.length;
+        int maxPeso = Integer.MIN_VALUE;
         int[] mejorParticion = new int[n];
-        int totalCombinaciones = 1 << n;
 
-        for (int mask = 0; mask < totalCombinaciones; mask++) {
+        long inicio = System.nanoTime();
+
+        int total = 1 << n;
+
+        for (int mask = 0; mask < total; mask++) {
+
+            double tiempo = (System.nanoTime() - inicio) / 1e9;
+            if (tiempo > tiempoLimiteSegundos) {
+                System.out.println("   [Timeout alcanzado]");
+                break;
+            }
+
             int pesoActual = 0;
             int[] particion = new int[n];
-            
+
             for (int i = 0; i < n; i++) {
                 particion[i] = (mask >> i) & 1;
             }
@@ -30,7 +41,7 @@ public class MaxCut {
             for (int i = 0; i < n; i++) {
                 for (int j = i + 1; j < n; j++) {
                     if (particion[i] != particion[j]) {
-                        pesoActual += matrizAdyacencia[i][j];
+                        pesoActual += matriz[i][j];
                     }
                 }
             }
@@ -44,8 +55,9 @@ public class MaxCut {
         return new Resultado(maxPeso, mejorParticion);
     }
 
-    public static Resultado maxCutGreedy(int[][] matrizAdyacencia) {
-        int n = matrizAdyacencia.length;
+    // GREEDY 
+    public static Resultado maxCutGreedy(int[][] matriz) {
+        int n = matriz.length;
         int[] particion = new int[n];
         Random rand = new Random();
 
@@ -59,20 +71,19 @@ public class MaxCut {
             huboMejora = false;
 
             for (int i = 0; i < n; i++) {
-                int pesoMismoConjunto = 0;
-                int pesoOtroConjunto = 0;
+                int mismo = 0;
+                int otro = 0;
 
                 for (int j = 0; j < n; j++) {
-                    if (i != j && matrizAdyacencia[i][j] > 0) {
-                        if (particion[i] == particion[j]) {
-                            pesoMismoConjunto += matrizAdyacencia[i][j];
-                        } else {
-                            pesoOtroConjunto += matrizAdyacencia[i][j];
-                        }
+                    if (i != j) {
+                        if (particion[i] == particion[j])
+                            mismo += matriz[i][j];
+                        else
+                            otro += matriz[i][j];
                     }
                 }
 
-                if (pesoMismoConjunto > pesoOtroConjunto) {
+                if (mismo > otro) {
                     particion[i] = 1 - particion[i];
                     huboMejora = true;
                 }
@@ -83,7 +94,7 @@ public class MaxCut {
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
                 if (particion[i] != particion[j]) {
-                    pesoFinal += matrizAdyacencia[i][j];
+                    pesoFinal += matriz[i][j];
                 }
             }
         }
@@ -91,40 +102,104 @@ public class MaxCut {
         return new Resultado(pesoFinal, particion);
     }
 
+    // LEER ARCHIVO
+    public static int[][] leerGrafo(String nombreArchivo) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(nombreArchivo));
+
+            String[] primeraLinea = br.readLine().split(" ");
+            int n = Integer.parseInt(primeraLinea[0]);
+
+            int[][] matriz = new int[n][n];
+
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(" ");
+                int u = Integer.parseInt(partes[0]) - 1;
+                int v = Integer.parseInt(partes[1]) - 1;
+                int w = Integer.parseInt(partes[2]);
+
+                matriz[u][v] = w;
+                matriz[v][u] = w;
+            }
+
+            br.close();
+            return matriz;
+
+        } catch (Exception e) {
+            System.out.println("Error al leer archivo: " + nombreArchivo);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // SUBGRAFO 
+    public static int[][] subgrafo(int[][] grafo, int k) {
+        int n = grafo.length;
+        k = Math.min(k, n);
+
+        int[][] sub = new int[k][k];
+
+        for (int i = 0; i < k; i++) {
+            for (int j = 0; j < k; j++) {
+                sub[i][j] = grafo[i][j];
+            }
+        }
+
+        return sub;
+    }
+
+    // MAIN 
     public static void main(String[] args) {
-        int[][] grafoPrueba = {
-            {0,5,0,4,1,2,0,3,1,2},
-            {5,0,4,0,2,1,3,0,2,1},
-            {0,4,0,5,3,2,1,2,0,3},
-            {4,0,5,0,2,3,2,1,4,0},
-            {1,2,3,2,0,4,0,3,2,1},
-            {2,1,2,3,4,0,5,0,1,2},
-            {0,3,1,2,0,5,0,4,2,3},
-            {3,0,2,1,3,0,4,0,5,2},
-            {1,2,0,4,2,1,2,5,0,3},
-            {2,1,3,0,1,2,3,2,3,0}
-        };
 
-        System.out.println("--- INICIANDO PRUEBAS MAX CUT EN JAVA ---\n");
+        System.out.println("--- MAX CUT (5 INSTANCIAS) ---\n");
 
-        long inicioFB = System.nanoTime();
-        Resultado resultadoFB = maxCutFuerzaBruta(grafoPrueba);
-        long finFB = System.nanoTime();
-        double duracionFB = (finFB - inicioFB) / 1e9;
+        double TIMEOUT_REAL = 5;
+        double TIMEOUT_SUB = 10;
+        int k = 20;
 
-        System.out.println("1. FUERZA BRUTA:");
-        System.out.println("   Peso maximo: " + resultadoFB.peso);
-        System.out.println("   Particion: " + Arrays.toString(resultadoFB.particion));
-        System.out.printf("   Tiempo: %.6f segundos\n\n", duracionFB);
+        for (int i = 1; i <= 5; i++) {
 
-        long inicioGreedy = System.nanoTime();
-        Resultado resultadoGreedy = maxCutGreedy(grafoPrueba);
-        long finGreedy = System.nanoTime();
-        double duracionGreedy = (finGreedy - inicioGreedy) / 1e9;
+            String archivo = "instancias/g" + i + ".mc";
 
-        System.out.println("2. HEURISTICA (GREEDY):");
-        System.out.println("   Peso maximo: " + resultadoGreedy.peso);
-        System.out.println("   Particion: " + Arrays.toString(resultadoGreedy.particion));
-        System.out.printf("   Tiempo: %.6f segundos\n", duracionGreedy);
+            System.out.println("===== INSTANCIA " + i + " =====");
+
+            int[][] grafo = leerGrafo(archivo);
+
+            // BACKTRACKING
+            if (i == 1) {
+                System.out.println("--- Intento fuerza bruta (grafo completo) ---");
+
+                long inicio = System.nanoTime();
+                Resultado resFull = maxCutFuerzaBrutaTimeout(grafo, TIMEOUT_REAL);
+                long fin = System.nanoTime();
+
+                System.out.println("Resultado parcial: " + resFull.peso);
+                System.out.printf("Tiempo: %.6f s\n", (fin - inicio) / 1e9);
+                System.out.println("Conclusion: Timeout alcanzado, no es viable\n");
+            }
+
+            // SUBGRAFO
+            System.out.println("--- Fuerza bruta en subgrafo (" + k + " nodos) ---");
+
+            int[][] sub = subgrafo(grafo, k);
+
+            long inicioFB = System.nanoTime();
+            Resultado resFB = maxCutFuerzaBrutaTimeout(sub, TIMEOUT_SUB);
+            long finFB = System.nanoTime();
+
+            System.out.println("Resultado exacto: " + resFB.peso);
+            System.out.printf("Tiempo: %.6f s\n\n", (finFB - inicioFB) / 1e9);
+
+            // GREEDY 
+            System.out.println("--- Heuristica Greedy (grafo completo) ---");
+
+            long inicioG = System.nanoTime();
+            Resultado resG = maxCutGreedy(grafo);
+            long finG = System.nanoTime();
+
+            System.out.println("Resultado: " + resG.peso);
+            System.out.printf("Tiempo: %.6f s\n\n", (finG - inicioG) / 1e9);
+        }
     }
 }

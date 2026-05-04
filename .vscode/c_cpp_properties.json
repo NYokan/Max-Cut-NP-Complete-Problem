@@ -1,0 +1,46 @@
+{
+  "configurations": [
+    {
+      "name": "MSVC",
+      "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.2x.xxxx/bin/Hostx64/x64/cl.exe",
+      "intelliSenseMode": "msvc-x64",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/**",
+        "C:/Program Files (x86)/Windows Kits/10/Include/**"
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}/**",
+          "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/**",
+          "C:/Program Files (x86)/Windows Kits/10/Include/**"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "windowsSdkVersion": "10.0.19041.0"
+    },
+    {
+      "name": "MinGW",
+      "compilerPath": "C:/MinGW/bin/g++.exe",
+      "intelliSenseMode": "gcc-x64",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "C:/MinGW/include",
+        "C:/MinGW/lib/gcc/mingw32/**"
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}/**",
+          "C:/MinGW/include",
+          "C:/MinGW/lib/gcc/mingw32/**"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "cStandard": "c17",
+      "cppStandard": "c++17"
+    }
+  ],
+  "version": 4
+}

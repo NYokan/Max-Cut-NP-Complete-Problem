@@ -1,9 +1,9 @@
 import java.io.*;
 import java.util.*;
+import java.text.SimpleDateFormat;
 
 public class FuerzaBruta {
 
-    // Clase auxiliar para retornar tanto el peso como el arreglo de la partición
     static class Resultado {
         int peso;
         int[] particion;
@@ -14,21 +14,26 @@ public class FuerzaBruta {
         }
     }
 
-    // FUERZA BRUTA CON TIMEOUT
+    public static String obtenerFechaHora() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(new Date());
+    }
+
+    public static boolean archivoExiste(String nombre) {
+        File f = new File(nombre);
+        return f.exists();
+    }
+
     public static Resultado maxCutFuerzaBrutaTimeout(int[][] matriz, double tiempoLimiteSegundos) {
         int n = matriz.length;
         int maxPeso = Integer.MIN_VALUE;
         int[] mejorParticion = new int[n];
 
         long inicio = System.nanoTime();
-
-        // Total de combinaciones posibles es 2^N (usando desplazamiento de bits)
         int total = 1 << n;
 
-        // Iteramos por cada posible combinación usando una máscara de bits
         for (int mask = 0; mask < total; mask++) {
 
-            // Verificación del timeout para abortar si el grafo es demasiado grande
             double tiempo = (System.nanoTime() - inicio) / 1e9;
             if (tiempo > tiempoLimiteSegundos) {
                 System.out.println("   [Timeout alcanzado]");
@@ -38,12 +43,10 @@ public class FuerzaBruta {
             int pesoActual = 0;
             int[] particion = new int[n];
 
-            // Decodificamos la máscara: si el bit i es 1, el nodo i va al grupo 1 (si no, al 0)
             for (int i = 0; i < n; i++) {
                 particion[i] = (mask >> i) & 1;
             }
 
-            // Sumamos los pesos de las aristas que conectan nodos en distintos grupos (corte)
             for (int i = 0; i < n; i++) {
                 for (int j = i + 1; j < n; j++) {
                     if (particion[i] != particion[j]) {
@@ -52,7 +55,6 @@ public class FuerzaBruta {
                 }
             }
 
-            // Actualizamos si encontramos un corte más pesado
             if (pesoActual > maxPeso) {
                 maxPeso = pesoActual;
                 mejorParticion = particion.clone();
@@ -62,7 +64,6 @@ public class FuerzaBruta {
         return new Resultado(maxPeso, mejorParticion);
     }
 
-    // LECTURA DEL ARCHIVO .MC
     public static int[][] leerGrafo(String nombreArchivo) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(nombreArchivo));
@@ -75,12 +76,12 @@ public class FuerzaBruta {
             String linea;
             while ((linea = br.readLine()) != null) {
                 String[] partes = linea.split(" ");
-                int u = Integer.parseInt(partes[0]) - 1; // Ajuste base 0
+                int u = Integer.parseInt(partes[0]) - 1;
                 int v = Integer.parseInt(partes[1]) - 1;
                 int w = Integer.parseInt(partes[2]);
 
                 matriz[u][v] = w;
-                matriz[v][u] = w; // Grafo no dirigido
+                matriz[v][u] = w;
             }
 
             br.close();
@@ -92,14 +93,12 @@ public class FuerzaBruta {
         }
     }
 
-    // EXTRACCIÓN DE SUBGRAFO
     public static int[][] subgrafo(int[][] grafo, int k) {
         int n = grafo.length;
-        k = Math.min(k, n); // Evitar desbordes
+        k = Math.min(k, n);
 
         int[][] sub = new int[k][k];
 
-        // Copiamos solo los nodos de 0 a K
         for (int i = 0; i < k; i++) {
             for (int j = 0; j < k; j++) {
                 sub[i][j] = grafo[i][j];
@@ -109,7 +108,6 @@ public class FuerzaBruta {
         return sub;
     }
 
-    // MAIN
     public static void main(String[] args) {
         System.out.println("--- MAX CUT: FUERZA BRUTA ---\n");
 
@@ -118,10 +116,18 @@ public class FuerzaBruta {
         int k = 20;
         
         String archivoCSV = "resultados_fuerza_bruta_java.csv";
+        boolean existe = archivoExiste(archivoCSV);
 
         try {
-            FileWriter csvWriter = new FileWriter(archivoCSV);
-            csvWriter.append("Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios\n");
+            FileWriter csvWriter = new FileWriter(archivoCSV, true);
+
+            if (!existe) {
+                csvWriter.append("FechaHora,Algoritmo,Lenguaje,Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios\n");
+            }
+
+            String fecha = obtenerFechaHora();
+            String algoritmo = "FuerzaBruta";
+            String lenguaje = "Java";
 
             for (int i = 1; i <= 5; i++) {
                 String archivo = "instancias/g" + i + ".mc";
@@ -130,7 +136,6 @@ public class FuerzaBruta {
                 int[][] grafo = leerGrafo(archivo);
                 if (grafo == null) continue;
 
-                // --- INTENTO GRAFO COMPLETO (Instancia 1) ---
                 if (i == 1) {
                     System.out.println("--- Intento fuerza bruta (grafo completo) ---");
 
@@ -143,11 +148,10 @@ public class FuerzaBruta {
                     System.out.printf("Tiempo: %.6f s\n", tFull);
                     System.out.println("Conclusion: Timeout alcanzado, no es viable\n");
                     
-                    csvWriter.append(String.format(Locale.US, "Instancia %d,FB Completo,%d,%d,%.6f,Timeout\n", 
-                                     i, grafo.length, resFull.peso, tFull));
+                    csvWriter.append(String.format(Locale.US, "%s,%s,%s,Instancia %d,FB Completo,%d,%d,%.6f,Timeout\n", 
+                                     fecha, algoritmo, lenguaje, i, grafo.length, resFull.peso, tFull));
                 }
 
-                // --- SUBGRAFO (Medición exacta N=20) ---
                 System.out.println("--- Fuerza bruta en subgrafo (" + k + " nodos) ---");
 
                 int[][] sub = subgrafo(grafo, k);
@@ -160,8 +164,8 @@ public class FuerzaBruta {
                 System.out.println("Resultado exacto: " + resFB.peso);
                 System.out.printf("Tiempo: %.6f s\n\n", tSub);
                 
-                csvWriter.append(String.format(Locale.US, "Instancia %d,FB Subgrafo,%d,%d,%.6f,Optimo Garantizado\n", 
-                                 i, k, resFB.peso, tSub));
+                csvWriter.append(String.format(Locale.US, "%s,%s,%s,Instancia %d,FB Subgrafo,%d,%d,%.6f,Optimo Garantizado\n", 
+                                 fecha, algoritmo, lenguaje, i, k, resFB.peso, tSub));
             }
             
             csvWriter.flush();

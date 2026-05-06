@@ -5,10 +5,24 @@
 #include <fstream>
 #include <string>
 #include <climits>
+#include <ctime>
+#include <sys/stat.h>
 
 using namespace std;
 
-// FUERZA BRUTA CON TIMEOUT
+string obtener_fecha_hora() {
+    time_t ahora = time(0);
+    tm *ltm = localtime(&ahora);
+    char buffer[20];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", ltm);
+    return string(buffer);
+}
+
+bool archivo_existe(const string& nombre) {
+    struct stat buffer;
+    return (stat(nombre.c_str(), &buffer) == 0);
+}
+
 pair<int, vector<int>> max_cut_fuerza_bruta_timeout(
     const vector<vector<int>>& matriz_adyacencia,
     double tiempo_limite_segundos
@@ -17,17 +31,12 @@ pair<int, vector<int>> max_cut_fuerza_bruta_timeout(
     int max_peso = INT_MIN;
     vector<int> mejor_particion(n, 0);
 
-    // OJO: 1 << n es 2^N. Si n >= 32 esto desbordaría un entero normal.
-    // Como extraeremos subgrafos de N=20, esto calcula ~1 millón de combinaciones, lo cual es seguro.
     int total_combinaciones = 1 << n;
 
     auto inicio = chrono::high_resolution_clock::now();
 
-    // Iteramos por todas las particiones posibles usando máscaras de bits (bitmasking)
     for (int mask = 0; mask < total_combinaciones; ++mask) {
 
-        // --- Mecanismo de Timeout ---
-        // Evalúa el tiempo transcurrido para abortar si el grafo es muy grande
         auto ahora = chrono::high_resolution_clock::now();
         double tiempo = chrono::duration<double>(ahora - inicio).count();
 
@@ -39,12 +48,10 @@ pair<int, vector<int>> max_cut_fuerza_bruta_timeout(
         int peso_actual = 0;
         vector<int> particion(n);
 
-        // Decodificamos la máscara de bits: si el bit i es 1, el nodo i va al grupo 1 (sino al 0)
         for (int i = 0; i < n; ++i) {
             particion[i] = (mask >> i) & 1;
         }
 
-        // Sumamos los pesos de las aristas que cruzan el corte (nodos en grupos distintos)
         for (int i = 0; i < n; ++i) {
             for (int j = i + 1; j < n; ++j) {
                 if (particion[i] != particion[j]) {
@@ -53,7 +60,6 @@ pair<int, vector<int>> max_cut_fuerza_bruta_timeout(
             }
         }
 
-        // Actualizamos el mejor resultado local
         if (peso_actual > max_peso) {
             max_peso = peso_actual;
             mejor_particion = particion;
@@ -63,7 +69,6 @@ pair<int, vector<int>> max_cut_fuerza_bruta_timeout(
     return {max_peso, mejor_particion};
 }
 
-// LECTURA DEL ARCHIVO .MC
 vector<vector<int>> leer_grafo(const string& nombre_archivo) {
     ifstream archivo(nombre_archivo);
     if (!archivo.is_open()) {
@@ -72,30 +77,27 @@ vector<vector<int>> leer_grafo(const string& nombre_archivo) {
     }
 
     int n, m;
-    archivo >> n >> m; // Lee nodos y aristas
+    archivo >> n >> m;
 
-    // Inicializa la matriz de adyacencia NxN con ceros
     vector<vector<int>> matriz(n, vector<int>(n, 0));
 
     int u, v, w;
     while (archivo >> u >> v >> w) {
-        u--; v--; // Ajuste de índice base 1 a base 0
+        u--; v--;
         matriz[u][v] = w;
-        matriz[v][u] = w; // Grafo no dirigido
+        matriz[v][u] = w;
     }
 
     archivo.close();
     return matriz;
 }
 
-// EXTRACCIÓN DEL SUBGRAFO
 vector<vector<int>> subgrafo(const vector<vector<int>>& grafo, int k) {
     int n = grafo.size();
-    k = min(k, n); // Asegura no salir de los límites
+    k = min(k, n);
 
     vector<vector<int>> sub(k, vector<int>(k, 0));
 
-    // Copia solo la esquina superior izquierda de KxK
     for (int i = 0; i < k; i++) {
         for (int j = 0; j < k; j++) {
             sub[i][j] = grafo[i][j];
@@ -104,19 +106,24 @@ vector<vector<int>> subgrafo(const vector<vector<int>>& grafo, int k) {
     return sub;
 }
 
-// FUNCIÓN PRINCIPAL
 int main() {
     cout << "--- MAX CUT: FUERZA BRUTA ---\n\n";
 
-    double TIMEOUT_REAL = 5.0; // Tiempo límite para el grafo completo
-    double TIMEOUT_SUB = 10.0; // Tiempo límite para el subgrafo
-    int k = 20; // Tamaño del subgrafo
+    double TIMEOUT_REAL = 5.0;
+    double TIMEOUT_SUB = 10.0;
+    int k = 20;
 
-    string nombre_csv = "resultados_fuerza_bruta.csv";
-    ofstream archivo_csv(nombre_csv);
-    
-    // Escribimos los encabezados en el CSV
-    archivo_csv << "Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios\n";
+    string nombre_csv = "resultados_fuerza_bruta_cpp.csv";
+    bool existe = archivo_existe(nombre_csv);
+    ofstream archivo_csv(nombre_csv, ios::app);
+
+    if (!existe) {
+        archivo_csv << "FechaHora,Algoritmo,Lenguaje,Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios\n";
+    }
+
+    string fecha = obtener_fecha_hora();
+    string algoritmo = "FuerzaBruta";
+    string lenguaje = "C++";
 
     for (int i = 1; i <= 5; i++) {
         string nombre_archivo = "instancias/g" + to_string(i) + ".mc";
@@ -126,10 +133,9 @@ int main() {
         try {
             grafo = leer_grafo(nombre_archivo);
         } catch(...) {
-            continue; // Si falla la lectura, salta a la siguiente instancia
+            continue;
         }
 
-        // --- GRAFO COMPLETO (Demostración de Timeout solo en la Instancia 1) ---
         if (i == 1) {
             cout << "--- Intento fuerza bruta (grafo completo) ---\n";
 
@@ -142,12 +148,11 @@ int main() {
             cout << "Tiempo: " << fixed << setprecision(6) << t_full << " s\n";
             cout << "Conclusion: Timeout alcanzado, no es viable\n\n";
             
-            // Guardar en CSV
-            archivo_csv << "Instancia " << i << ",FB Completo," << grafo.size() << "," 
+            archivo_csv << fecha << "," << algoritmo << "," << lenguaje << ","
+                        << "Instancia " << i << ",FB Completo," << grafo.size() << ","
                         << resultado_full.first << "," << t_full << ",Timeout\n";
         }
 
-        // --- SUBGRAFO (Medición exacta N=20) ---
         cout << "--- Fuerza bruta en subgrafo (20 nodos) ---\n";
         vector<vector<int>> grafo_pequeno = subgrafo(grafo, k);
 
@@ -159,8 +164,8 @@ int main() {
         cout << "Resultado exacto: " << resultado_fb.first << "\n";
         cout << "Tiempo: " << fixed << setprecision(6) << t_sub << " s\n\n";
         
-        // Guardar en CSV
-        archivo_csv << "Instancia " << i << ",FB Subgrafo," << k << "," 
+        archivo_csv << fecha << "," << algoritmo << "," << lenguaje << ","
+                    << "Instancia " << i << ",FB Subgrafo," << k << ","
                     << resultado_fb.first << "," << t_sub << ",Optimo Garantizado\n";
     }
 

@@ -5,22 +5,34 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
+#include <ctime>
+#include <sys/stat.h>
 
 using namespace std;
 
-// HEURÍSTICA GREEDY (BÚSQUEDA LOCAL DETERMINISTA)
+string obtener_fecha_hora() {
+    time_t ahora = time(0);
+    tm *ltm = localtime(&ahora);
+    char buffer[20];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", ltm);
+    return string(buffer);
+}
+
+bool archivo_existe(const string& nombre) {
+    struct stat buffer;
+    return (stat(nombre.c_str(), &buffer) == 0);
+}
+
 pair<int, vector<int>> max_cut_greedy(const vector<vector<int>>& matriz_adyacencia) {
     int n = matriz_adyacencia.size();
     vector<int> particion(n);
 
-    // Asignación inicial (determinista, ya que el srand() se definió en el main)
     for (int i = 0; i < n; ++i) {
         particion[i] = rand() % 2;
     }
 
     bool hubo_mejora = true;
 
-    // Iteramos mientras logremos mejorar el peso del corte intercambiando nodos
     while (hubo_mejora) {
         hubo_mejora = false;
 
@@ -28,25 +40,22 @@ pair<int, vector<int>> max_cut_greedy(const vector<vector<int>>& matriz_adyacenc
             int peso_mismo = 0;
             int peso_otro = 0;
 
-            // Comparamos el peso de mantener el nodo en su grupo vs enviarlo al contrario
             for (int j = 0; j < n; ++j) {
                 if (i != j) {
                     if (particion[i] == particion[j])
-                        peso_mismo += matriz_adyacencia[i][j]; // Conexiones perdidas
+                        peso_mismo += matriz_adyacencia[i][j];
                     else
-                        peso_otro += matriz_adyacencia[i][j];  // Conexiones ganadas (cortadas)
+                        peso_otro += matriz_adyacencia[i][j];
                 }
             }
 
-            // Si mantenerlo en su grupo suma más, entonces lo cambiamos de bando para cortar esas aristas
             if (peso_mismo > peso_otro) {
-                particion[i] = 1 - particion[i]; // Invierte el grupo (0->1 o 1->0)
+                particion[i] = 1 - particion[i];
                 hubo_mejora = true;
             }
         }
     }
 
-    // Calculamos el peso final real tras alcanzar el óptimo local
     int peso_final = 0;
     for (int i = 0; i < n; ++i) {
         for (int j = i + 1; j < n; ++j) {
@@ -59,7 +68,6 @@ pair<int, vector<int>> max_cut_greedy(const vector<vector<int>>& matriz_adyacenc
     return {peso_final, particion};
 }
 
-// LECTURA DEL ARCHIVO .MC
 vector<vector<int>> leer_grafo(const string& nombre_archivo) {
     ifstream archivo(nombre_archivo);
     if (!archivo.is_open()) {
@@ -83,20 +91,22 @@ vector<vector<int>> leer_grafo(const string& nombre_archivo) {
     return matriz;
 }
 
-// FUNCIÓN PRINCIPAL
 int main() {
-    // --- SEMILLA DETERMINISTA ---
-    // En vez de time(0), usamos una semilla fija (ej. 2) para que el estado inicial 
-    // sea siempre idéntico y dependa puramente de la estructura iterativa de C++.
     srand(2); 
 
     cout << "--- MAX CUT: HEURISTICA GREEDY ---\n\n";
 
-    string nombre_csv = "resultados_greedy.csv";
-    ofstream archivo_csv(nombre_csv);
+    string nombre_csv = "resultados_greedy_cpp.csv";
+    bool existe = archivo_existe(nombre_csv);
+    ofstream archivo_csv(nombre_csv, ios::app);
     
-    // Escribimos los encabezados en el CSV
-    archivo_csv << "Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios\n";
+    if (!existe) {
+        archivo_csv << "FechaHora,Algoritmo,Lenguaje,Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios\n";
+    }
+
+    string fecha = obtener_fecha_hora();
+    string algoritmo = "Greedy";
+    string lenguaje = "C++";
 
     for (int i = 1; i <= 5; i++) {
         string nombre_archivo = "instancias/g" + to_string(i) + ".mc";
@@ -109,7 +119,6 @@ int main() {
             continue;
         }
 
-        // --- GREEDY GRAFO COMPLETO ---
         cout << "--- Ejecutando Búsqueda Local (Grafo completo) ---\n";
 
         auto inicio_g = chrono::high_resolution_clock::now();
@@ -120,8 +129,8 @@ int main() {
         cout << "Resultado: " << resultado_g.first << "\n";
         cout << "Tiempo: " << fixed << setprecision(6) << t_greedy << " s\n\n";
 
-        // Guardar en CSV
-        archivo_csv << "Instancia " << i << ",Heuristica Greedy," << grafo.size() << "," 
+        archivo_csv << fecha << "," << algoritmo << "," << lenguaje << ","
+                    << "Instancia " << i << ",Heuristica Greedy," << grafo.size() << ","
                     << resultado_g.first << "," << t_greedy << ",Semilla Determinista (2)\n";
     }
 

@@ -1,0 +1,6 @@
+FechaHora,Algoritmo,Lenguaje,Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios
+2026-05-01 16:14:09,Greedy,Java,Instancia 1,Heuristica Greedy,125,90,0.002037,Semilla Determinista (2)
+2026-05-01 16:14:09,Greedy,Java,Instancia 2,Heuristica Greedy,125,90,0.000495,Semilla Determinista (2)
+2026-05-01 16:14:09,Greedy,Java,Instancia 3,Heuristica Greedy,125,88,0.000440,Semilla Determinista (2)
+2026-05-01 16:14:09,Greedy,Java,Instancia 4,Heuristica Greedy,125,82,0.000439,Semilla Determinista (2)
+2026-05-01 16:14:09,Greedy,Java,Instancia 5,Heuristica Greedy,125,84,0.000317,Semilla Determinista (2)

@@ -1,0 +1,7 @@
+FechaHora,Algoritmo,Lenguaje,Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios
+2026-05-01 16:08:53,FuerzaBruta,Python,Instancia 1,FB Completo,125,10,5.000570,Timeout
+2026-05-01 16:08:53,FuerzaBruta,Python,Instancia 1,FB Subgrafo,20,14,9.874164,Optimo Garantizado
+2026-05-01 16:08:53,FuerzaBruta,Python,Instancia 2,FB Subgrafo,20,13,10.000204,Optimo Garantizado
+2026-05-01 16:08:53,FuerzaBruta,Python,Instancia 3,FB Subgrafo,20,11,10.000269,Optimo Garantizado
+2026-05-01 16:08:53,FuerzaBruta,Python,Instancia 4,FB Subgrafo,20,11,9.205938,Optimo Garantizado
+2026-05-01 16:08:53,FuerzaBruta,Python,Instancia 5,FB Subgrafo,20,7,9.568069,Optimo Garantizado

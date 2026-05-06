@@ -1,0 +1,7 @@
+FechaHora,Algoritmo,Lenguaje,Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios
+2026-05-01 16:08:37,FuerzaBruta,Java,Instancia 1,FB Completo,125,40,5.000924,Timeout
+2026-05-01 16:08:37,FuerzaBruta,Java,Instancia 1,FB Subgrafo,20,14,0.459086,Optimo Garantizado
+2026-05-01 16:08:37,FuerzaBruta,Java,Instancia 2,FB Subgrafo,20,13,0.386564,Optimo Garantizado
+2026-05-01 16:08:37,FuerzaBruta,Java,Instancia 3,FB Subgrafo,20,11,0.405168,Optimo Garantizado
+2026-05-01 16:08:37,FuerzaBruta,Java,Instancia 4,FB Subgrafo,20,11,0.415192,Optimo Garantizado
+2026-05-01 16:08:37,FuerzaBruta,Java,Instancia 5,FB Subgrafo,20,7,0.328084,Optimo Garantizado

@@ -1,0 +1,6 @@
+FechaHora,Algoritmo,Lenguaje,Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios
+2026-05-01 16:14:14,Greedy,Python,Instancia 1,Heuristica Greedy,125,80,0.004283,Semilla Determinista (2)
+2026-05-01 16:14:14,Greedy,Python,Instancia 2,Heuristica Greedy,125,70,0.003914,Semilla Determinista (2)
+2026-05-01 16:14:14,Greedy,Python,Instancia 3,Heuristica Greedy,125,92,0.006256,Semilla Determinista (2)
+2026-05-01 16:14:14,Greedy,Python,Instancia 4,Heuristica Greedy,125,86,0.004330,Semilla Determinista (2)
+2026-05-01 16:14:14,Greedy,Python,Instancia 5,Heuristica Greedy,125,92,0.003196,Semilla Determinista (2)

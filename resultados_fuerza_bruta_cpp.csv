@@ -1,0 +1,7 @@
+FechaHora,Algoritmo,Lenguaje,Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios
+2026-05-01 16:10:18,FuerzaBruta,C++,Instancia 1,FB Completo,125,36,5.00021,Timeout
+2026-05-01 16:10:18,FuerzaBruta,C++,Instancia 1,FB Subgrafo,20,14,1.81023,Optimo Garantizado
+2026-05-01 16:10:18,FuerzaBruta,C++,Instancia 2,FB Subgrafo,20,13,3.08449,Optimo Garantizado
+2026-05-01 16:10:18,FuerzaBruta,C++,Instancia 3,FB Subgrafo,20,11,3.72516,Optimo Garantizado
+2026-05-01 16:10:18,FuerzaBruta,C++,Instancia 4,FB Subgrafo,20,11,3.88762,Optimo Garantizado
+2026-05-01 16:10:18,FuerzaBruta,C++,Instancia 5,FB Subgrafo,20,7,3.78143,Optimo Garantizado

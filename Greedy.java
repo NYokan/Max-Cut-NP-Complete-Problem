@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import java.text.SimpleDateFormat;
 
 public class Greedy {
 
@@ -13,12 +14,20 @@ public class Greedy {
         }
     }
 
-    // HEURÍSTICA GREEDY (BÚSQUEDA LOCAL DETERMINISTA)
+    public static String obtenerFechaHora() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(new Date());
+    }
+
+    public static boolean archivoExiste(String nombre) {
+        File f = new File(nombre);
+        return f.exists();
+    }
+
     public static Resultado maxCutGreedy(int[][] matriz, int semilla) {
         int n = matriz.length;
         int[] particion = new int[n];
         
-        // Semilla fija para reproducibilidad exacta y justificar los resultados del informe
         Random rand = new Random(semilla);
 
         for (int i = 0; i < n; i++) {
@@ -27,7 +36,6 @@ public class Greedy {
 
         boolean huboMejora = true;
 
-        // El algoritmo itera mientras logre mejorar el peso moviendo algún nodo
         while (huboMejora) {
             huboMejora = false;
 
@@ -35,8 +43,6 @@ public class Greedy {
                 int mismo = 0;
                 int otro = 0;
 
-                // Calculamos cuánto peso suma estando en su grupo actual (mismo)
-                // y cuánto sumaría si cruza las aristas al irse al otro grupo (otro)
                 for (int j = 0; j < n; j++) {
                     if (i != j) {
                         if (particion[i] == particion[j])
@@ -46,15 +52,13 @@ public class Greedy {
                     }
                 }
 
-                // Si gana más peso (corta más aristas) al cambiarse de grupo, lo movemos
                 if (mismo > otro) {
-                    particion[i] = 1 - particion[i]; // Cambio 0->1 o 1->0
+                    particion[i] = 1 - particion[i];
                     huboMejora = true;
                 }
             }
         }
 
-        // Calculamos el peso real de la configuración final estabilizada
         int pesoFinal = 0;
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
@@ -67,7 +71,6 @@ public class Greedy {
         return new Resultado(pesoFinal, particion);
     }
 
-    // LECTURA DEL ARCHIVO .MC
     public static int[][] leerGrafo(String nombreArchivo) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(nombreArchivo));
@@ -97,15 +100,22 @@ public class Greedy {
         }
     }
 
-    // MAIN
     public static void main(String[] args) {
         System.out.println("--- MAX CUT: HEURISTICA GREEDY ---\n");
 
         String archivoCSV = "resultados_greedy_java.csv";
+        boolean existe = archivoExiste(archivoCSV);
 
         try {
-            FileWriter csvWriter = new FileWriter(archivoCSV);
-            csvWriter.append("Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios\n");
+            FileWriter csvWriter = new FileWriter(archivoCSV, true);
+
+            if (!existe) {
+                csvWriter.append("FechaHora,Algoritmo,Lenguaje,Instancia,Enfoque,Nodos,Resultado,Tiempo_s,Comentarios\n");
+            }
+
+            String fecha = obtenerFechaHora();
+            String algoritmo = "Greedy";
+            String lenguaje = "Java";
 
             for (int i = 1; i <= 5; i++) {
                 String archivo = "instancias/g" + i + ".mc";
@@ -114,11 +124,9 @@ public class Greedy {
                 int[][] grafo = leerGrafo(archivo);
                 if (grafo == null) continue;
 
-                // --- GREEDY GRAFO COMPLETO ---
                 System.out.println("--- Ejecutando Búsqueda Local (Grafo completo) ---");
 
                 long inicioG = System.nanoTime();
-                // Usamos la semilla '2' como se documentó en el informe
                 Resultado resG = maxCutGreedy(grafo, 2); 
                 long finG = System.nanoTime();
                 double tGreedy = (finG - inicioG) / 1e9;
@@ -126,8 +134,8 @@ public class Greedy {
                 System.out.println("Resultado: " + resG.peso);
                 System.out.printf("Tiempo: %.6f s\n\n", tGreedy);
                 
-                csvWriter.append(String.format(Locale.US, "Instancia %d,Heuristica Greedy,%d,%d,%.6f,Semilla Determinista (2)\n", 
-                                 i, grafo.length, resG.peso, tGreedy));
+                csvWriter.append(String.format(Locale.US, "%s,%s,%s,Instancia %d,Heuristica Greedy,%d,%d,%.6f,Semilla Determinista (2)\n", 
+                                 fecha, algoritmo, lenguaje, i, grafo.length, resG.peso, tGreedy));
             }
             
             csvWriter.flush();

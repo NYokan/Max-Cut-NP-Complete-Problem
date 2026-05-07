@@ -4,12 +4,15 @@ import csv
 import os
 from datetime import datetime
 
+# Obtiene la fecha y hora actual en formato legible
 def obtener_fecha_hora():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+# Verifica si el archivo para guardar datos existe
 def archivo_existe(nombre):
     return os.path.isfile(nombre)
 
+# Función de fuerza bruta con timeout para el problema Max Cut
 def max_cut_fuerza_bruta_timeout(matriz, tiempo_limite):
     n = len(matriz)
     max_peso = float('-inf')
@@ -36,6 +39,7 @@ def max_cut_fuerza_bruta_timeout(matriz, tiempo_limite):
 
     return max_peso, mejor_particion
 
+# Lee un grafo desde un archivo y lo representa como una matriz de adyacencia
 def leer_grafo(nombre_archivo):
     with open(nombre_archivo, 'r') as f:
         n, m = map(int, f.readline().split())
@@ -48,15 +52,17 @@ def leer_grafo(nombre_archivo):
             matriz[v][u] = w
     return matriz
 
+# Extrae un subgrafo de los primeros k nodos del grafo original
 def subgrafo(grafo, k):
     k = min(k, len(grafo))
     return [fila[:k] for fila in grafo[:k]]
 
+# Función principal para ejecutar el programa
 if __name__ == "__main__":
     print("--- MAX CUT: FUERZA BRUTA ---\n")
 
-    TIMEOUT_REAL = 5
-    TIMEOUT_SUB = 10
+    TIMEOUT_REAL = 3600
+    TIMEOUT_SUB = 3600
     k = 20
     
     archivo_csv = "resultados_fuerza_bruta_python.csv"

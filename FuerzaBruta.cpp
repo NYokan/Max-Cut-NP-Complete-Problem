@@ -10,6 +10,7 @@
 
 using namespace std;
 
+// Obtiene fecha y hora actual en formato "AAAA-MM-DD HH:MM:SS" para agregarlo al CSV.
 string obtener_fecha_hora() {
     time_t ahora = time(0);
     tm *ltm = localtime(&ahora);
@@ -18,40 +19,46 @@ string obtener_fecha_hora() {
     return string(buffer);
 }
 
+// Verifica si el archivo para guardar datos existe.
 bool archivo_existe(const string& nombre) {
     struct stat buffer;
     return (stat(nombre.c_str(), &buffer) == 0);
 }
 
+// Función de fuerza bruta con timeout para el problema Max Cut
 pair<int, vector<int>> max_cut_fuerza_bruta_timeout(
     const vector<vector<int>>& matriz_adyacencia,
     double tiempo_limite_segundos
 ) {
     int n = matriz_adyacencia.size();
-    int max_peso = INT_MIN;
-    vector<int> mejor_particion(n, 0);
+    int max_peso = INT_MIN; // Guardará el peso máximo encontrado
+    vector<int> mejor_particion(n, 0); // Guardará la partición que da el peso máximo
 
     int total_combinaciones = 1 << n;
 
-    auto inicio = chrono::high_resolution_clock::now();
+    auto inicio = chrono::high_resolution_clock::now(); // Se registra el tiempo de inicio
 
     for (int mask = 0; mask < total_combinaciones; ++mask) {
 
+        // Verifica tiempo transcurrido
         auto ahora = chrono::high_resolution_clock::now();
         double tiempo = chrono::duration<double>(ahora - inicio).count();
 
+        // Se detiene si alcanza timeout
         if (tiempo > tiempo_limite_segundos) {
             cout << "   [Timeout alcanzado]\n";
             break;
         }
-
+        
         int peso_actual = 0;
         vector<int> particion(n);
-
+        
+        // Construye la partición actual a partir del bitmask
         for (int i = 0; i < n; ++i) {
             particion[i] = (mask >> i) & 1;
         }
-
+        
+        // Calcula el peso del corte para esta partición
         for (int i = 0; i < n; ++i) {
             for (int j = i + 1; j < n; ++j) {
                 if (particion[i] != particion[j]) {
@@ -60,6 +67,7 @@ pair<int, vector<int>> max_cut_fuerza_bruta_timeout(
             }
         }
 
+        // Actualiza el mejor resultado si se encuentra uno mejor
         if (peso_actual > max_peso) {
             max_peso = peso_actual;
             mejor_particion = particion;
@@ -69,6 +77,7 @@ pair<int, vector<int>> max_cut_fuerza_bruta_timeout(
     return {max_peso, mejor_particion};
 }
 
+// Función para leer grafo desde el archivo dado
 vector<vector<int>> leer_grafo(const string& nombre_archivo) {
     ifstream archivo(nombre_archivo);
     if (!archivo.is_open()) {
@@ -81,6 +90,7 @@ vector<vector<int>> leer_grafo(const string& nombre_archivo) {
 
     vector<vector<int>> matriz(n, vector<int>(n, 0));
 
+    // Lee las aristas y sus pesos, ajustando índices para que comiencen en 0
     int u, v, w;
     while (archivo >> u >> v >> w) {
         u--; v--;
@@ -92,6 +102,7 @@ vector<vector<int>> leer_grafo(const string& nombre_archivo) {
     return matriz;
 }
 
+// Función para obtener un subgrafo de los primeros k nodos
 vector<vector<int>> subgrafo(const vector<vector<int>>& grafo, int k) {
     int n = grafo.size();
     k = min(k, n);
@@ -106,13 +117,15 @@ vector<vector<int>> subgrafo(const vector<vector<int>>& grafo, int k) {
     return sub;
 }
 
+// Función de fuerza bruta con timeout para el problema Max Cut
 int main() {
     cout << "--- MAX CUT: FUERZA BRUTA ---\n\n";
 
-    double TIMEOUT_REAL = 5.0;
-    double TIMEOUT_SUB = 10.0;
+    double TIMEOUT_REAL = 3600;
+    double TIMEOUT_SUB = 3600;
     int k = 20;
 
+    // Configuración para guardar resultados en CSV (algoritmo y lenguaje)
     string nombre_csv = "resultados_fuerza_bruta_cpp.csv";
     bool existe = archivo_existe(nombre_csv);
     ofstream archivo_csv(nombre_csv, ios::app);

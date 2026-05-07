@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 
 public class FuerzaBruta {
 
+    // Clase para almacenar el resultado del corte máximo
     static class Resultado {
         int peso;
         int[] particion;
@@ -14,20 +15,23 @@ public class FuerzaBruta {
         }
     }
 
+    // Obtiene la fecha y hora actual en formato "AAAA-MM-DD HH:MM:SS"
     public static String obtenerFechaHora() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sdf.format(new Date());
     }
 
+    // Verifica si el archivo para guardar datos existe
     public static boolean archivoExiste(String nombre) {
         File f = new File(nombre);
         return f.exists();
     }
 
+    // Función de fuerza bruta con timeout para el problema Max Cut
     public static Resultado maxCutFuerzaBrutaTimeout(int[][] matriz, double tiempoLimiteSegundos) {
         int n = matriz.length;
-        int maxPeso = Integer.MIN_VALUE;
-        int[] mejorParticion = new int[n];
+        int maxPeso = Integer.MIN_VALUE; // Guarda el peso máximo encontrado
+        int[] mejorParticion = new int[n]; // Guarda la partición que produce el peso máximo
 
         long inicio = System.nanoTime();
         int total = 1 << n;
@@ -64,6 +68,7 @@ public class FuerzaBruta {
         return new Resultado(maxPeso, mejorParticion);
     }
 
+    // Lee un grafo desde un archivo y lo representa como una matriz de adyacencia
     public static int[][] leerGrafo(String nombreArchivo) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(nombreArchivo));
@@ -93,6 +98,7 @@ public class FuerzaBruta {
         }
     }
 
+    // Extrae un subgrafo de los primeros k nodos del grafo original
     public static int[][] subgrafo(int[][] grafo, int k) {
         int n = grafo.length;
         k = Math.min(k, n);
@@ -108,11 +114,12 @@ public class FuerzaBruta {
         return sub;
     }
 
+    // Función principal para ejecutar el programa
     public static void main(String[] args) {
         System.out.println("--- MAX CUT: FUERZA BRUTA ---\n");
 
-        double TIMEOUT_REAL = 5.0;
-        double TIMEOUT_SUB = 10.0;
+        double TIMEOUT_REAL = 3600.0;
+        double TIMEOUT_SUB = 3600.0;
         int k = 20;
         
         String archivoCSV = "resultados_fuerza_bruta_java.csv";
